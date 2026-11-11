@@ -1,0 +1,36 @@
+name: Wallet Scanner
+
+on:
+  schedule:
+    # هر روز ساعت 00:00 UTC اجرا شود
+    - cron: '0 0 * * *'
+  workflow_dispatch: # برای اجرای دستی هم مجاز باشد
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          pip install web3 requests bip-utils tronpy
+
+      - name: Run Scanner
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          python scanner.py
+
+      - name: Upload Results
+        uses: actions/upload-artifact@v3
+        with:
+          name: results
+          path: scan_results.txt
